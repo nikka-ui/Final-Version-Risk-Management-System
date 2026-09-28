@@ -48,3 +48,6 @@ cookies.txt
 _test_cookies.txt
 _cookies_rmo.txt
 _rmo_cookies.txt
+
+# Database dumps (contain user data)
+*.dump
