@@ -1,6 +1,23 @@
 @props([
     'title' => 'ACCC Risk Management System',
 ])
+@php
+  $brandDefaults = \App\Support\SystemSettings::defaults();
+  try {
+      $brandSettings = app(\App\Services\AdminSettingsService::class)->get();
+  } catch (\Throwable $e) {
+      // Sign-in must still render if the settings store is unreachable.
+      $brandSettings = $brandDefaults;
+  }
+  $brand = static function (string $key) use ($brandSettings, $brandDefaults): string {
+      $value = trim((string) ($brandSettings[$key] ?? ''));
+
+      return $value !== '' ? $value : $brandDefaults[$key];
+  };
+  $brandTagline = $brand('landingTagline');
+  $brandHeadline = $brand('landingHeadline');
+  $brandOrg = $brand('organizationName');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,10 +35,8 @@
     <div class="login-card">
       <aside class="login-visual">
         <div class="login-visual__intro">
-          <p class="login-visual__eyebrow">Identify. Assess. Mitigate.</p>
-          <h2 class="login-visual__headline">ACCC Risk
-Management
-System</h2>
+          <p class="login-visual__eyebrow">{{ $brandTagline }}</p>
+          <h2 class="login-visual__headline">{{ $brandHeadline }}</h2>
         </div>
         <div class="login-visual__art">
           <img src="/img/risk-illustration.png" alt="Risk management dashboard illustration" class="login-visual__img">
@@ -32,7 +47,7 @@ System</h2>
           {{ $slot }}
         </div>
         <footer class="login-foot">
-          <span>&copy; {{ date('Y') }} ACCC. Authorized personnel only.</span>
+          <span>&copy; {{ date('Y') }} {{ $brandOrg }}. Authorized personnel only.</span>
         </footer>
       </main>
     </div>

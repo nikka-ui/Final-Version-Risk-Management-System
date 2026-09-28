@@ -75,6 +75,31 @@ class AdminSettingsMutationTest extends TestCase
         $this->assertSame('weekly', $row->payload['backupFrequency']);
     }
 
+    public function test_login_page_reflects_landing_settings(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Identify. Assess. Mitigate.')
+            ->assertSee('ACCC. Authorized personnel only.');
+
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)
+            ->post('/admin/settings', [
+                'landingTagline' => 'Custom tagline',
+                'landingHeadline' => "Custom\nHeadline",
+                'organizationName' => 'Custom Org',
+            ])
+            ->assertRedirect();
+        auth()->logout();
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Custom tagline')
+            ->assertSee("Custom\nHeadline", false)
+            ->assertSee('Custom Org. Authorized personnel only.')
+            ->assertDontSee('Identify. Assess. Mitigate.');
+    }
+
     public function test_non_admin_cannot_save_settings(): void
     {
         $reporter = User::factory()->create([
