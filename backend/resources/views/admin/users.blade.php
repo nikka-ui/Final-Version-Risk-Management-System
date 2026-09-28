@@ -20,6 +20,16 @@
     $users = $users ?? [];
     $editUser = $editUser ?? null;
     $showForm = (bool) ($showForm ?? false);
+    $pagination = $pagination ?? ['page' => 1, 'lastPage' => 1];
+    $page = (int) $pagination['page'];
+    $lastPage = (int) $pagination['lastPage'];
+    $pageQuery = array_filter([
+      'q' => $filters['q'] ?? '',
+      'role' => $filters['role'] ?? '',
+      'status' => $filters['status'] ?? '',
+      'filter' => $filters['filter'] ?? '',
+    ], static fn ($v) => $v !== '' && $v !== null);
+    $pageUrl = static fn (int $p) => '/admin/users?'.http_build_query($pageQuery + ['page' => $p]);
   @endphp
 
   @if ($flashMsg)
@@ -61,7 +71,7 @@
     ])
   @endif
 
-  <section class="sup-card sup-card--table">
+  <section class="sup-card sup-card--table admin-users-card">
     <div class="table-wrap">
       <table class="data-table data-table--compact sup-table admin-users-table">
         <thead>
@@ -94,24 +104,30 @@
               };
             @endphp
             <tr>
-              <td class="mono">{{ $u['employeeId'] ?: '—' }}</td>
-              <td>
+              <td class="mono" data-label="Employee ID">{{ $u['employeeId'] ?: '—' }}</td>
+              <td class="col-name" data-label="Full Name">
                 <strong>{{ $u['displayName'] }}</strong>
                 @if (!empty($u['builtIn']))
                   <span class="tag">built-in</span>
                 @endif
               </td>
-              <td>{{ $u['email'] ?: '—' }}</td>
-              <td class="mono">{{ $u['username'] }}</td>
-              <td>{{ $u['department'] ?: '—' }}</td>
-              <td>{{ $u['position'] ?: '—' }}</td>
-              <td>{{ $u['roleLabel'] }}</td>
-              <td>
+              <td class="col-email" data-label="Email">
+                @if (!empty($u['email']) && str_contains($u['email'], '@'))
+                  {{ \Illuminate\Support\Str::before($u['email'], '@') }}<wbr>{{ '@'.\Illuminate\Support\Str::after($u['email'], '@') }}
+                @else
+                  {{ $u['email'] ?: '—' }}
+                @endif
+              </td>
+              <td class="mono" data-label="Username">{{ $u['username'] }}</td>
+              <td data-label="Department">{{ $u['department'] ?: '—' }}</td>
+              <td data-label="Company Position">{{ $u['position'] ?: '—' }}</td>
+              <td data-label="Role">{{ $u['roleLabel'] }}</td>
+              <td data-label="Status">
                 <span class="admin-status admin-status--{{ $statusCls }}">
                   <span class="admin-status__dot" aria-hidden="true"></span>{{ $statusLabel }}
                 </span>
               </td>
-              <td class="col-actions">
+              <td class="col-actions" data-label="Actions">
                 @if ($isPrimaryAdmin)
                   <span class="text-muted">Protected</span>
                 @else
@@ -161,5 +177,18 @@
         </tbody>
       </table>
     </div>
+    <nav class="admin-pager-bar admin-pager" aria-label="User list pages">
+      @if ($page > 1)
+        <a href="{{ $pageUrl($page - 1) }}" class="admin-pager__btn" rel="prev" aria-label="Previous page">&lsaquo; Prev</a>
+      @else
+        <span class="admin-pager__btn is-disabled" aria-disabled="true">&lsaquo; Prev</span>
+      @endif
+      <span class="admin-pager__label" aria-current="page">Page {{ $page }} of {{ $lastPage }}</span>
+      @if ($page < $lastPage)
+        <a href="{{ $pageUrl($page + 1) }}" class="admin-pager__btn" rel="next" aria-label="Next page">Next &rsaquo;</a>
+      @else
+        <span class="admin-pager__btn is-disabled" aria-disabled="true">Next &rsaquo;</span>
+      @endif
+    </nav>
   </section>
 @endsection

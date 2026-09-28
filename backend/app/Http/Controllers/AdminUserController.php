@@ -14,6 +14,8 @@ use Illuminate\View\View;
  */
 class AdminUserController extends Controller
 {
+    private const PER_PAGE = 10;
+
     public function __construct(
         private readonly AdminUserService $users,
         private readonly ExpressOrgMirrorService $orgMirror,
@@ -208,12 +210,20 @@ class AdminUserController extends Controller
     private function viewData(Request $request, array $payload): array
     {
         $user = $request->user();
+        $allUsers = array_values($payload['users']);
+        $total = count($allUsers);
+        $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
+        $page = min(max(1, (int) $request->query('page', 1)), $lastPage);
 
         return [
             'user' => $user->toIdentityArray(),
             'activeNav' => 'users',
             'title' => 'User Management',
-            'users' => $payload['users'],
+            'users' => array_slice($allUsers, ($page - 1) * self::PER_PAGE, self::PER_PAGE),
+            'pagination' => [
+                'page' => $page,
+                'lastPage' => $lastPage,
+            ],
             'departments' => $payload['departments'],
             'roles' => $payload['roles'],
             'filters' => $payload['filters'],

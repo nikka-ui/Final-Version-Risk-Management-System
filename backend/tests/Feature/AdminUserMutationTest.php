@@ -19,6 +19,26 @@ class AdminUserMutationTest extends TestCase
             ->assertJsonPath('slice', 3);
     }
 
+    public function test_user_list_is_paginated_ten_per_page(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->count(14)->create();
+
+        $first = $this->actingAs($admin)->get('/admin/users')
+            ->assertOk()
+            ->assertSee('Page 1 of 2');
+        $this->assertSame(10, substr_count($first->getContent(), 'data-label="Username"'));
+
+        $second = $this->actingAs($admin)->get('/admin/users?page=2')
+            ->assertOk()
+            ->assertSee('Page 2 of 2');
+        $this->assertSame(5, substr_count($second->getContent(), 'data-label="Username"'));
+
+        $this->actingAs($admin)->get('/admin/users?page=99')
+            ->assertOk()
+            ->assertSee('Page 2 of 2');
+    }
+
     public function test_guest_cannot_create_user(): void
     {
         $this->post('/admin/users', [

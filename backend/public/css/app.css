@@ -6589,6 +6589,74 @@ a.officer-kpi:hover {
   border-top: 1px solid var(--sup-border);
 }
 
+/* User Management: pager + table */
+.admin-console .supervisor-main:has(.admin-users-card) {
+  max-width: 1320px;
+}
+
+.admin-console .admin-pager-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--sup-border);
+}
+
+.admin-console .admin-pager__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #334155;
+  background: #fff;
+  border: 1px solid var(--sup-border);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-console a.admin-pager__btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.admin-console .admin-pager__btn.is-disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.admin-console .admin-pager__label {
+  padding: 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.admin-console .admin-users-table {
+  width: 100%;
+  min-width: 960px;
+}
+
+.admin-console .admin-users-table .col-email {
+  overflow-wrap: break-word;
+  min-width: 9rem;
+}
+
+.admin-console .admin-users-table .col-name .tag {
+  margin-left: 0.25rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 960px) {
   .admin-console .admin-dash-grid {
     grid-template-columns: 1fr;
