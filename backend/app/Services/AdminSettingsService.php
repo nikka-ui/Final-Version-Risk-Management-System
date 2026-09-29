@@ -46,6 +46,7 @@ class AdminSettingsService
             'landingTagline' => $defaults['landingTagline'],
             'landingHeadline' => $defaults['landingHeadline'],
             'organizationName' => $defaults['organizationName'],
+            'footerCopyright' => $defaults['footerCopyright'],
         ]);
 
         return ['settings' => $this->save($merged)];
@@ -97,25 +98,38 @@ class AdminSettingsService
         if (! in_array($freq, ['daily', 'weekly'], true)) {
             $freq = 'daily';
         }
-        $passwordMin = (int) ($input['passwordMinLength'] ?? 0);
-        $sessionTimeout = (int) ($input['sessionTimeoutMinutes'] ?? 0);
         $maxUpload = (int) ($input['maxUploadSizeMb'] ?? 0);
 
-        return [
+        $normalized = [
             'landingTagline' => mb_substr(trim((string) ($input['landingTagline'] ?? '')), 0, 120),
             'landingHeadline' => mb_substr(trim(str_replace("\r\n", "\n", (string) ($input['landingHeadline'] ?? ''))), 0, 200),
             'organizationName' => mb_substr(trim((string) ($input['organizationName'] ?? '')), 0, 80),
+            'footerCopyright' => mb_substr(trim((string) ($input['footerCopyright'] ?? '')), 0, 160),
             'defaultRiskLevels' => $riskLevels,
-            'emailNotifications' => $this->boolish($input['emailNotifications'] ?? false),
-            'passwordMinLength' => $passwordMin > 0 ? $passwordMin : 8,
-            'sessionTimeoutMinutes' => $sessionTimeout > 0 ? $sessionTimeout : 480,
-            'mfaEnabled' => $this->boolish($input['mfaEnabled'] ?? false),
             'maxUploadSizeMb' => $maxUpload > 0 ? $maxUpload : 25,
             'allowedFileTypes' => $fileTypes,
             'maintenanceMode' => $this->boolish($input['maintenanceMode'] ?? false),
             'backupEnabled' => $this->boolish($input['backupEnabled'] ?? false),
             'backupFrequency' => $freq,
         ];
+
+        // Not on the admin Blade form; only overwrite when a client (e.g. the JSON API) sends them.
+        if (array_key_exists('emailNotifications', $input)) {
+            $normalized['emailNotifications'] = $this->boolish($input['emailNotifications']);
+        }
+        if (array_key_exists('mfaEnabled', $input)) {
+            $normalized['mfaEnabled'] = $this->boolish($input['mfaEnabled']);
+        }
+        if (array_key_exists('passwordMinLength', $input)) {
+            $passwordMin = (int) $input['passwordMinLength'];
+            $normalized['passwordMinLength'] = $passwordMin > 0 ? $passwordMin : 8;
+        }
+        if (array_key_exists('sessionTimeoutMinutes', $input)) {
+            $sessionTimeout = (int) $input['sessionTimeoutMinutes'];
+            $normalized['sessionTimeoutMinutes'] = $sessionTimeout > 0 ? $sessionTimeout : 480;
+        }
+
+        return $normalized;
     }
 
     private function boolish(mixed $value): bool

@@ -231,7 +231,7 @@ class DeptTicketApiTest extends TestCase
         $this->withToken($itToken)
             ->postJson("/v1/tickets/{$reference}/return", ['reason' => 'Needs more evidence'])
             ->assertOk()
-            ->assertJsonPath('ticket.status', 'ownership_rejected');
+            ->assertJsonPath('ticket.status', 'returned');
 
         $this->withToken($reporterToken)->postJson("/v1/tickets/{$reference}/submit")->assertOk();
 

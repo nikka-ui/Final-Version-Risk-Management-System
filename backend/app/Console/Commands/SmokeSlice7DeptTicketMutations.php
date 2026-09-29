@@ -82,7 +82,7 @@ class SmokeSlice7DeptTicketMutations extends Command
                 'reason' => 'Needs more evidence',
             ]), $refA);
             $ticketA->refresh();
-            if ($ticketA->status !== 'ownership_rejected' || ! str_contains($returned->getTargetUrl(), 'flash=report_returned')) {
+            if ($ticketA->status !== 'returned' || ! str_contains($returned->getTargetUrl(), 'flash=report_returned')) {
                 $this->error('dept return did not persist');
 
                 return self::FAILURE;
@@ -91,6 +91,7 @@ class SmokeSlice7DeptTicketMutations extends Command
 
             $reassign = $controller->reassign($this->postRequest('/dept/tickets/'.$refB.'/reassign', [
                 'reason' => 'Finance owns this',
+                'comment' => 'Smoke reassignment comment',
                 'targetDepartment' => $fin->name,
             ]), $refB);
             $ticketB->refresh();

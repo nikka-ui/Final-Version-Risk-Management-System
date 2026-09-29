@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Http\UploadedFile;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -47,6 +48,25 @@ abstract class TestCase extends BaseTestCase
         $this->resetAuthState();
 
         return parent::withToken($token, $type);
+    }
+
+    /**
+     * Uploads are validated by sniffing file contents, so fakes need real magic bytes.
+     */
+    protected function fakePdf(string $name = 'evidence.pdf'): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n",
+        );
+    }
+
+    protected function fakePng(string $name = 'image.png'): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='),
+        );
     }
 
     public function createApplication()

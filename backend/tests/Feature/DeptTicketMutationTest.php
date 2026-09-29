@@ -79,11 +79,12 @@ class DeptTicketMutationTest extends TestCase
             ->post('/dept/tickets/RISK-TEST-D002/return', ['reason' => 'Needs evidence'])
             ->assertRedirect();
         $ticketA->refresh();
-        $this->assertSame('ownership_rejected', $ticketA->status);
+        $this->assertSame('returned', $ticketA->status);
 
         $this->actingAs($head)
             ->post('/dept/tickets/RISK-TEST-D003/reassign', [
                 'reason' => 'Finance owns this',
+                'comment' => 'Handing off with context for Finance.',
                 'targetDepartment' => 'Finance',
             ])
             ->assertRedirect();

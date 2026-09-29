@@ -115,7 +115,7 @@ class LoginOtpTest extends TestCase
 
         Mail::assertSent(LoginOtpMail::class, function (LoginOtpMail $mail) use ($user) {
             return $mail->hasTo($user->email)
-                && $mail->hasFrom('itdepartment.accc@gmail.ph')
+                && $mail->hasFrom((string) config('mail.otp_from.address'))
                 && strlen($mail->otp) === 6;
         });
 

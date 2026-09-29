@@ -25,7 +25,7 @@ class ReporterEvidenceMutationTest extends TestCase
 
     public function test_guest_cannot_upload_evidence_or_accomplishment(): void
     {
-        $file = UploadedFile::fake()->create('evidence.pdf', 4, 'application/pdf');
+        $file = $this->fakePdf('evidence.pdf');
         $this->reopenedTicket('RISK-TEST-E001', 'reporter1');
 
         $this->post('/supervisor/tickets/RISK-TEST-E001/evidence', [
@@ -52,7 +52,7 @@ class ReporterEvidenceMutationTest extends TestCase
 
         $this->actingAs($reporter)
             ->post('/supervisor/tickets/RISK-TEST-E002/evidence', [
-                'attachments' => [UploadedFile::fake()->create('reopen.pdf', 5, 'application/pdf')],
+                'attachments' => [$this->fakePdf('reopen.pdf')],
             ])
             ->assertRedirect();
 
@@ -72,7 +72,7 @@ class ReporterEvidenceMutationTest extends TestCase
             ->post('/supervisor/tickets/RISK-TEST-E003/accomplishment', [
                 'summary' => 'Implemented the plan',
                 'outcomes' => 'Risk reduced',
-                'attachments' => [UploadedFile::fake()->create('proof.png', 4, 'image/png')],
+                'attachments' => [$this->fakePng('proof.png')],
             ])
             ->assertRedirect();
 

@@ -104,6 +104,7 @@ class SmokeDeptWorkflow extends Command
 
         $ticket = $deptTickets->reassign($ticket->fresh(), $itHead, [
             'reason' => 'Smoke reassignment',
+            'comment' => 'Smoke reassignment comment',
             'targetDepartment' => $targetDept,
         ]);
         $this->info("reassigned status={$ticket->status} dept={$ticket->department}");

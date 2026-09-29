@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\RiskAttachment;
 use App\Models\RiskTicket;
 use App\Models\User;
 use App\Support\Roles;
@@ -56,8 +57,9 @@ class ReporterTicketMutationTest extends TestCase
             ])
             ->assertRedirect();
         $ticketA->refresh();
-        $this->assertSame('assigned', $ticketA->status);
-        $this->assertSame('pending', $ticketA->ownership['state'] ?? null);
+        // Generic 5W1H text with no active departments cannot be auto-routed, so it waits for officer review.
+        $this->assertSame('pending_ai_review', $ticketA->status);
+        $this->assertSame('pending_ai_review', $ticketA->ownership['state'] ?? null);
 
         $this->actingAs($reporter)
             ->post('/supervisor/tickets/RISK-TEST-R003/delete')
@@ -175,7 +177,7 @@ class ReporterTicketMutationTest extends TestCase
 
     private function draftTicket(string $ref, string $username): RiskTicket
     {
-        return RiskTicket::query()->create([
+        $ticket = RiskTicket::query()->create([
             'external_id' => 'ext-'.$ref,
             'reference' => $ref,
             'title' => $ref,
@@ -194,5 +196,19 @@ class ReporterTicketMutationTest extends TestCase
                 'how' => 'how',
             ],
         ]);
+
+        RiskAttachment::query()->create([
+            'id' => 'att-'.md5($ref),
+            'ticket_ref' => $ref,
+            'original_name' => 'evidence.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 100,
+            'storage_key' => "{$ref}/evidence.pdf",
+            'uploaded_by' => $username,
+            'legacy' => false,
+            'uploaded_at' => now(),
+        ]);
+
+        return $ticket;
     }
 }

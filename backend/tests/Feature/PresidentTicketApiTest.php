@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\RiskAttachment;
 use App\Models\RiskTicket;
 use App\Models\User;
 use App\Support\Roles;
@@ -47,6 +48,18 @@ class PresidentTicketApiTest extends TestCase
                 'evidenceCount' => 1,
             ])
             ->json('ticket.reference');
+
+        RiskAttachment::query()->create([
+            'id' => 'att-'.md5($reference),
+            'ticket_ref' => $reference,
+            'original_name' => 'evidence.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 100,
+            'storage_key' => "{$reference}/evidence.pdf",
+            'uploaded_by' => 'reporter',
+            'legacy' => false,
+            'uploaded_at' => now(),
+        ]);
 
         $this->withToken($reporterToken)->postJson("/v1/tickets/{$reference}/submit")->assertOk();
 

@@ -403,8 +403,8 @@
               <textarea id="reassignReason" name="reason" rows="2" required></textarea>
             </div>
             <div class="field field--console">
-              <label for="reassignComment">Comment <span class="text-muted">(optional)</span></label>
-              <textarea id="reassignComment" name="comment" rows="2"></textarea>
+              <label for="reassignComment">Comment <span class="text-muted">(required)</span></label>
+              <textarea id="reassignComment" name="comment" rows="2" required></textarea>
             </div>
             <div class="field field--console">
               <label for="reassignTarget">Transfer to</label>

@@ -17,6 +17,7 @@
   $brandTagline = $brand('landingTagline');
   $brandHeadline = $brand('landingHeadline');
   $brandOrg = $brand('organizationName');
+  $brandFooter = strtr($brand('footerCopyright'), ['{YEAR}' => date('Y'), '{ORG}' => $brandOrg]);
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -47,7 +48,8 @@
           {{ $slot }}
         </div>
         <footer class="login-foot">
-          <span>&copy; {{ date('Y') }} {{ $brandOrg }}. Authorized personnel only.</span>
+          <span>{{ $brandFooter }}</span>
+          <span class="login-foot__credit">Developed by Nikka Shane T Cruz</span>
         </footer>
       </main>
     </div>

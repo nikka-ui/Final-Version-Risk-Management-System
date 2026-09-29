@@ -11,6 +11,9 @@ services:
         required: false
 
   api:
+    build:
+      args:
+        INSTALL_DEV: "true"
     environment:
       APP_ENV: local
       STORE_JSON_PATH: /import/store.json

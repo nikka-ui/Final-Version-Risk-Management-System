@@ -33,5 +33,13 @@
         <env name="AI_SERVICE_URL" value=""/>
         <env name="RMS_INTERNAL_SERVICE_TOKEN" value="test-internal-token"/>
         <env name="RMS_AI_AUTO_ROUTE" value="true"/>
+        <!-- Laravel reads $_SERVER before $_ENV, so container env vars (Docker) would override the <env> entries above. -->
+        <server name="APP_ENV" value="testing" force="true"/>
+        <server name="CACHE_STORE" value="array" force="true"/>
+        <server name="DB_CONNECTION" value="sqlite" force="true"/>
+        <server name="DB_DATABASE" value=":memory:" force="true"/>
+        <server name="MAIL_MAILER" value="array" force="true"/>
+        <server name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <server name="SESSION_DRIVER" value="array" force="true"/>
     </php>
 </phpunit>

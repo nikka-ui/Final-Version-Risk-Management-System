@@ -26,7 +26,7 @@ class DeptDocumentMutationTest extends TestCase
     {
         $this->inProgressTicket('RISK-TEST-DOC1', 'dept.head');
         $this->post('/dept/tickets/RISK-TEST-DOC1/documents', [
-            'attachments' => [UploadedFile::fake()->create('doc.pdf', 4, 'application/pdf')],
+            'attachments' => [$this->fakePdf('doc.pdf')],
         ])->assertRedirect();
 
         $this->assertSame(0, (int) RiskTicket::query()->where('reference', 'RISK-TEST-DOC1')->value('evidence_count'));
@@ -44,7 +44,7 @@ class DeptDocumentMutationTest extends TestCase
 
         $this->actingAs($head)
             ->post('/dept/tickets/RISK-TEST-DOC2/documents', [
-                'attachments' => [UploadedFile::fake()->create('dept.pdf', 6, 'application/pdf')],
+                'attachments' => [$this->fakePdf('dept.pdf')],
             ])
             ->assertRedirect();
 

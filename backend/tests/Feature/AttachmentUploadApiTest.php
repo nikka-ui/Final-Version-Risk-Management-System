@@ -56,7 +56,7 @@ class AttachmentUploadApiTest extends TestCase
         $token = $this->token('reporter', 'a3c2026');
         $reference = $this->createTicket($token);
 
-        $file = UploadedFile::fake()->create('evidence.pdf', 4, 'application/pdf');
+        $file = $this->fakePdf('evidence.pdf');
 
         $id = $this->withToken($token)
             ->post("/v1/tickets/{$reference}/attachments/upload", [

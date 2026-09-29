@@ -80,7 +80,7 @@ class AdminSettingsMutationTest extends TestCase
         $this->get('/login')
             ->assertOk()
             ->assertSee('Identify. Assess. Mitigate.')
-            ->assertSee('ACCC. Authorized personnel only.');
+            ->assertSee('ACCC. All rights reserved.');
 
         $admin = User::factory()->admin()->create();
         $this->actingAs($admin)
@@ -88,6 +88,7 @@ class AdminSettingsMutationTest extends TestCase
                 'landingTagline' => 'Custom tagline',
                 'landingHeadline' => "Custom\nHeadline",
                 'organizationName' => 'Custom Org',
+                'footerCopyright' => '© {YEAR} {ORG}. Internal use only.',
             ])
             ->assertRedirect();
         auth()->logout();
@@ -96,7 +97,7 @@ class AdminSettingsMutationTest extends TestCase
             ->assertOk()
             ->assertSee('Custom tagline')
             ->assertSee("Custom\nHeadline", false)
-            ->assertSee('Custom Org. Authorized personnel only.')
+            ->assertSee('© '.date('Y').' Custom Org. Internal use only.')
             ->assertDontSee('Identify. Assess. Mitigate.');
     }
 

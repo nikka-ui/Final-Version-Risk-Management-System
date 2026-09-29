@@ -16,6 +16,7 @@ final class SystemSettings
             'landingTagline' => 'Identify. Assess. Mitigate.',
             'landingHeadline' => "ACCC Risk\nManagement\nSystem",
             'organizationName' => 'ACCC',
+            'footerCopyright' => '© {YEAR} {ORG}. All rights reserved.',
             'systemName' => 'AI-Assisted ISO 31000 Risk Management System',
             'themeColor' => '#2563eb',
             'defaultRiskLevels' => ['low', 'moderate', 'high', 'critical'],

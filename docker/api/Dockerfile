@@ -18,10 +18,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Set to "true" (dev compose override) to include PHPUnit and other require-dev packages.
+ARG INSTALL_DEV=false
+
 # Install PHP dependencies first for better layer caching.
 COPY backend/composer.json backend/composer.lock ./
 RUN composer install \
-        --no-dev \
+        $([ "$INSTALL_DEV" = "true" ] || echo --no-dev) \
         --no-scripts \
         --no-autoloader \
         --prefer-dist \
@@ -33,7 +36,7 @@ COPY docker/api/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN rm -f .env \
     && composer install \
-        --no-dev \
+        $([ "$INSTALL_DEV" = "true" ] || echo --no-dev) \
         --optimize-autoloader \
         --prefer-dist \
         --no-interaction \

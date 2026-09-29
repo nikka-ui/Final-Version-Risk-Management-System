@@ -529,6 +529,15 @@ body {
   text-align: center;
 }
 
+.login-foot span {
+  display: block;
+}
+
+.login-foot__credit {
+  margin-top: 0.15rem;
+  opacity: 0.85;
+}
+
 .login-form-wrap .alert {
   margin-bottom: 1.25rem;
 }

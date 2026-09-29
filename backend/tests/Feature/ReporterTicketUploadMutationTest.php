@@ -25,7 +25,7 @@ class ReporterTicketUploadMutationTest extends TestCase
 
     public function test_guest_cannot_create_or_edit_with_upload(): void
     {
-        $file = UploadedFile::fake()->create('evidence.pdf', 4, 'application/pdf');
+        $file = $this->fakePdf('evidence.pdf');
 
         $this->post('/supervisor/tickets/new/preview', $this->formPayload('RISK-TEST-U001', [
             'attachments' => [$file],
@@ -48,7 +48,7 @@ class ReporterTicketUploadMutationTest extends TestCase
             'department' => 'Information Technology',
         ]);
 
-        $createFile = UploadedFile::fake()->create('create.pdf', 6, 'application/pdf');
+        $createFile = $this->fakePdf('create.pdf');
         $this->actingAs($reporter)
             ->post('/supervisor/tickets/new/preview', $this->formPayload('RISK-TEST-U002', [
                 'attachments' => [$createFile],
@@ -62,7 +62,7 @@ class ReporterTicketUploadMutationTest extends TestCase
         $this->assertGreaterThanOrEqual(1, (int) $ticket->evidence_count);
         $this->assertSame(1, RiskAttachment::query()->where('ticket_ref', 'RISK-TEST-U002')->count());
 
-        $editFile = UploadedFile::fake()->create('edit.png', 5, 'image/png');
+        $editFile = $this->fakePng('edit.png');
         $this->actingAs($reporter)
             ->post('/supervisor/tickets/RISK-TEST-U002/edit', $this->formPayload('RISK-TEST-U002', [
                 'title' => 'Edited upload RISK-TEST-U002',
@@ -99,7 +99,7 @@ class ReporterTicketUploadMutationTest extends TestCase
             'role' => Roles::DEPT_HEAD,
             'role_label' => Roles::label(Roles::DEPT_HEAD),
         ]);
-        $file = UploadedFile::fake()->create('evidence.pdf', 4, 'application/pdf');
+        $file = $this->fakePdf('evidence.pdf');
 
         $this->actingAs($head)
             ->post('/supervisor/tickets/new/preview', $this->formPayload('RISK-TEST-U004', [

@@ -24,7 +24,7 @@
   <div class="sup-page-head">
     <div>
       <h1>System Settings</h1>
-      <p class="sup-page-desc">Configure landing page text, AI, security, and backup settings.</p>
+      <p class="sup-page-desc">Configure landing page text, AI, file upload, and backup settings.</p>
     </div>
   </div>
 
@@ -59,6 +59,13 @@
             placeholder="ACCC">
           <span class="field-hint">Shown in the sign-in page footer.</span>
         </div>
+        <div class="field admin-form-grid__full">
+          <label for="footerCopyright">Footer Copyright Text</label>
+          <input id="footerCopyright" name="footerCopyright" type="text" maxlength="160"
+            value="{{ $s['footerCopyright'] ?? '' }}"
+            placeholder="© {YEAR} {ORG}. All rights reserved.">
+          <span class="field-hint">Use {YEAR} for the current year and {ORG} for the organization name.</span>
+        </div>
       </div>
     </section>
 
@@ -73,30 +80,6 @@
       <div class="field">
         <label for="defaultRiskLevels">Default Risk Levels</label>
         <input id="defaultRiskLevels" name="defaultRiskLevels" type="text" value="{{ $riskLevels }}">
-      </div>
-    </section>
-
-    <section class="sup-card sup-card--compact">
-      <h2>Email &amp; Security</h2>
-      <div class="admin-form-grid">
-        <label class="admin-check-label">
-          <input type="checkbox" name="emailNotifications" value="1" @checked(!empty($s['emailNotifications']))>
-          Email Notifications
-        </label>
-        <div class="field">
-          <label for="passwordMinLength">Password Min Length</label>
-          <input id="passwordMinLength" name="passwordMinLength" type="number" min="6"
-            value="{{ $s['passwordMinLength'] ?? 8 }}">
-        </div>
-        <div class="field">
-          <label for="sessionTimeoutMinutes">Session Timeout (minutes)</label>
-          <input id="sessionTimeoutMinutes" name="sessionTimeoutMinutes" type="number"
-            value="{{ $s['sessionTimeoutMinutes'] ?? 480 }}">
-        </div>
-        <label class="admin-check-label">
-          <input type="checkbox" name="mfaEnabled" value="1" @checked(!empty($s['mfaEnabled']))>
-          Multi-Factor Authentication (optional)
-        </label>
       </div>
     </section>
 
