@@ -62,7 +62,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package.json
 
@@ -98,7 +98,7 @@ jobs:
             dockerfile: docker/frontend/Dockerfile
             build: true
           - name: nginx
-            image: nginx:1.27-alpine
+            image: nginx:1.30-alpine
             dockerfile: ""
             build: false
     steps:

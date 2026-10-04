@@ -208,7 +208,7 @@ See [Operations — Resetting ticket data](OPERATIONS.md#resetting-ticket-data).
 
 #### CI (Phase 12 slice 2 + Phase 15 slice 1)
 
-- Push/PR runs [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): Laravel PHPUnit, ai-service unit tests, Next.js `npm run build`, and Trivy scans of `rms-api`, `rms-ai-service`, `rms-frontend`, and `nginx:1.27-alpine`.
+- Push/PR runs [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): Laravel PHPUnit, ai-service unit tests, Next.js `npm run build`, and Trivy scans of `rms-api`, `rms-ai-service`, `rms-frontend`, and `nginx:1.30-alpine`.
 - Trivy **fails the job** on fixable **CRITICAL** CVEs; CRITICAL/HIGH are logged and uploaded as SARIF.
 - Local tests: `cd backend && composer test`
 

@@ -551,7 +551,7 @@ Expected: health `phase:13`,`slice:1`. `/ai-health` reports `mode: transformer-h
 
 | Piece | Notes |
 |-------|--------|
-| `.github/workflows/ci.yml` `trivy` job | Builds `rms-api` + `rms-ai-service`; pulls `nginx:1.27-alpine`; scans with Trivy |
+| `.github/workflows/ci.yml` `trivy` job | Builds `rms-api` + `rms-ai-service`; pulls `nginx:1.30-alpine`; scans with Trivy |
 | Gate | Fails the job on **fixable CRITICAL** CVEs (`ignore-unfixed: true`) |
 | Report | Table log of CRITICAL/HIGH plus SARIF upload to GitHub code scanning |
 | Health | `phase: 12`, `slice: 2` |

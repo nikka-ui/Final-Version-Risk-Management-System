@@ -6,7 +6,7 @@ name: rms
 
 services:
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.30-alpine
     container_name: rms-nginx
     restart: unless-stopped
     ports:

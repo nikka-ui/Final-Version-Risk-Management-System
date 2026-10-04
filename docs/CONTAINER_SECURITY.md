@@ -65,7 +65,7 @@ New-Item -ItemType Directory -Force -Path docker/secrets
 
 - Pin image digests/tags in compose (`postgres:16-alpine`, `redis:7.4-alpine`, not `latest`).
 - Rebuild application images on dependency updates.
-- Scan images before deploy (recommended tools: Docker Scout, Trivy). Phase 12 slice 2 runs Trivy in GitHub Actions on `rms-api`, `rms-ai-service`, and `nginx:1.27-alpine` (fails on fixable CRITICAL).
+- Scan images before deploy (recommended tools: Docker Scout, Trivy). Phase 12 slice 2 runs Trivy in GitHub Actions on `rms-api`, `rms-ai-service`, and `nginx:1.30-alpine` (fails on fixable CRITICAL).
 
 ```bash
 docker scout cves rms-api:latest

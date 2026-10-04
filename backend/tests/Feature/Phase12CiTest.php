@@ -35,7 +35,7 @@ class Phase12CiTest extends TestCase
         $this->assertStringContainsString('trivy', $yaml);
         $this->assertStringContainsString('rms-api:ci', $yaml);
         $this->assertStringContainsString('rms-ai-service:ci', $yaml);
-        $this->assertStringContainsString('nginx:1.27-alpine', $yaml);
+        $this->assertMatchesRegularExpression('/nginx:\d+\.\d+-alpine/', $yaml);
         $this->assertStringContainsString('severity: critical', $yaml);
     }
 }
