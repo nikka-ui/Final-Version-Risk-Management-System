@@ -2,6 +2,21 @@
 
 ISO 31000-aligned enterprise risk management with AI-assisted categorization, department ownership workflows (Ticket Reporter → Department Head → President for High/Critical), RMO governance oversight, Executive view-only dashboards, and Docker-based deployment.
 
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend / API | PHP 8.3, Laravel 11 (Blade UI + versioned REST API at `/api/v1`), Laravel Sanctum (auth), PHP-FPM |
+| Frontend | Next.js 15, React 19, TypeScript 5 (served at `/app`, optional `frontend` compose profile) |
+| AI service | Python 3.11, Flask 3, scikit-learn (risk categorization), Gunicorn |
+| Database | PostgreSQL 16 |
+| Cache | Redis 7.4 (phpredis) |
+| File storage | MinIO (S3-compatible, used for evidence uploads via Flysystem S3) |
+| Web server / reverse proxy | nginx 1.30 |
+| Email (dev) | Mailpit |
+| Containers | Docker, Docker Compose (dev, staging, prod overlays) |
+| CI / testing | GitHub Actions, PHPUnit 11, Trivy image scanning |
+
 ## Documentation
 
 | Document | Description |
@@ -69,6 +84,7 @@ docker compose -f docker/compose.yml -f docker/compose.override.yml --profile de
 
 ```
 backend/          # Laravel 11 Blade UI + API (docker/api)
+frontend/         # Next.js UI served at /app (docker/frontend)
 docker/           # Compose, Dockerfiles, nginx, secrets templates
 docs/             # Architecture, login, ports, security, operations
 .env.example      # Environment template

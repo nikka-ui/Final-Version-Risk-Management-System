@@ -44,6 +44,9 @@ temp/
 *cookies*
 *_cookies*.txt
 _rmo_page.html
+_ticket_page.html
+/president.html
+/trends.html
 cookies.txt
 _test_cookies.txt
 _cookies_rmo.txt
