@@ -123,7 +123,7 @@ jobs:
         run: docker pull ${{ matrix.image }}
 
       - name: Trivy report (CRITICAL,HIGH)
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ matrix.image }}
           format: table
@@ -132,7 +132,7 @@ jobs:
           exit-code: "0"
 
       - name: Trivy SARIF
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ matrix.image }}
           format: sarif
@@ -150,7 +150,7 @@ jobs:
           category: trivy-${{ matrix.name }}
 
       - name: Trivy gate (CRITICAL)
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ matrix.image }}
           format: table

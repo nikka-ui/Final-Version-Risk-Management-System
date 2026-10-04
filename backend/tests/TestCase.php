@@ -5,6 +5,7 @@ namespace Tests;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -12,6 +13,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         $this->withoutMiddleware(ValidateCsrfToken::class);
+        // CI has no MinIO/S3 credentials; any real S3 call falls back to EC2 metadata and fails.
+        Storage::fake('evidence');
     }
 
     protected function tearDown(): void
