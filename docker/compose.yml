@@ -186,17 +186,19 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  # Valkey speaks the Redis protocol. The service name stays "redis" so
+  # REDIS_HOST, cache, and queues keep the same connection path.
   redis:
-    image: redis:7.4-alpine
-    container_name: rms-redis
+    image: valkey/valkey:8.1-alpine
+    container_name: rms-valkey
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["valkey-server", "--appendonly", "yes"]
     volumes:
-      - rms_redis_data:/data
+      - rms_valkey_data:/data
     networks:
       - rms_data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -208,29 +210,61 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  # SeaweedFS S3 gateway. The service name stays "minio" so S3_ENDPOINT
+  # remains http://minio:9000 and the app still uses path-style S3.
   minio:
-    image: minio/minio:latest
-    container_name: rms-minio
+    image: chrislusf/seaweedfs:4.00
+    container_name: rms-seaweedfs
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        access="$${S3_ACCESS_KEY_ID:-$${MINIO_ROOT_USER:-rmsminio}}"
+        secret="$${S3_SECRET_ACCESS_KEY:-$${MINIO_ROOT_PASSWORD:-rmsminio-dev-change-me}}"
+        cat > /tmp/s3.json <<EOF
+        {
+          "identities": [
+            {
+              "name": "rms",
+              "credentials": [
+                {
+                  "accessKey": "$$access",
+                  "secretKey": "$$secret"
+                }
+              ],
+              "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+            }
+          ]
+        }
+        EOF
+        exec weed server -dir=/data -ip=minio -filer -filer.port=9001 -s3 -s3.port=9000 -s3.config=/tmp/s3.json
     environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-rmsminio}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-rmsminio-dev-change-me}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-rmsminio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-rmsminio-dev-change-me}
     volumes:
-      - rms_minio_data:/data
+      - rms_seaweedfs_data:/data
     networks:
       - rms_data
     expose:
       - "9000"
       - "9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9333/cluster/status && wget -S -O /dev/null http://127.0.0.1:9000/ 2>&1 | grep -q HTTP/"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 20s
     cap_drop:
       - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
     security_opt:
       - no-new-privileges:true
 
@@ -242,12 +276,14 @@ services:
       minio:
         condition: service_healthy
     environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-rmsminio}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-rmsminio-dev-change-me}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-rmsminio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-rmsminio-dev-change-me}
       S3_BUCKET: ${S3_BUCKET:-rms-uploads}
     entrypoint: >
       /bin/sh -c "
-      mc alias set rms http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc alias set rms http://minio:9000 $${S3_ACCESS_KEY_ID:-$$MINIO_ROOT_USER} $${S3_SECRET_ACCESS_KEY:-$$MINIO_ROOT_PASSWORD} &&
       mc mb --ignore-existing rms/$$S3_BUCKET &&
       exit 0
       "
@@ -272,8 +308,12 @@ volumes:
     name: rms_postgres_data
   rms_redis_data:
     name: rms_redis_data
+  rms_valkey_data:
+    name: rms_valkey_data
   rms_minio_data:
     name: rms_minio_data
+  rms_seaweedfs_data:
+    name: rms_seaweedfs_data
 
 secrets:
   db_password:

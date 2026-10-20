@@ -1,7 +1,7 @@
 <script>
 (function () {
-  const revisionBlocked = {{ $revisionBlocked ? 'true' : 'false' }};
-  const submitVerb = {{ $isRevise ? "'Resubmit ticket'" : "'Submit ticket'" }};
+  const revisionBlocked = @json((bool) ($revisionBlocked ?? false));
+  const submitVerb = @json(($isRevise ?? false) ? 'Resubmit ticket' : 'Submit ticket');
   const confirmBox = document.getElementById('confirmBox');
   const submitBtn = document.getElementById('submitBtn');
   const submitBtnNative = document.getElementById('submitBtnNative');
@@ -11,8 +11,10 @@
   const reviewHint = document.getElementById('reviewConfirmHint');
 
   function update() {
+    if (!confirmBox || !submitBtn) return;
     const checked = confirmBox.checked && !revisionBlocked;
     submitBtn.classList.toggle('btn-enterprise-primary--inactive', !checked);
+    submitBtn.classList.toggle('btn-enterprise-next-ready', checked);
     submitBtn.disabled = revisionBlocked;
     reviewSection?.classList.toggle('review-submission-section--confirmed', checked);
     if (reviewHint) {
@@ -32,6 +34,7 @@
     if (e.submitter?.id === 'submitBtnNative' && !confirmBox.checked) e.preventDefault();
   });
   confirmBox?.addEventListener('change', update);
+  confirmBox?.addEventListener('input', update);
   update();
 })();
 </script>

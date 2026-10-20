@@ -235,44 +235,55 @@
       </section>
 
       @if (count($personnel ?? []) > 0 || !empty($caps['canAssignPersonnel']))
-        <section class="sup-card">
-          <h2>Assigned personnel</h2>
-          @if (count($personnel ?? []) === 0)
-            <p class="sup-muted-block">No personnel assigned yet.</p>
-          @else
-            <ul class="audit-trail-list">
-              @foreach ($personnel as $person)
-                <li class="audit-trail-item">
-                  <div class="audit-trail-meta">
-                    <span class="audit-trail-action">{{ $person['name'] }}</span>
-                    @if (!empty($person['role']))
-                      <span class="audit-trail-user">{{ $person['role'] }}</span>
-                    @endif
-                    @if (!empty($person['assignedAt']))
-                      <span class="audit-trail-time">{{ \Illuminate\Support\Carbon::parse($person['assignedAt'])->format('Y-m-d H:i') }}</span>
-                    @endif
+        <section class="sup-card dept-collapse">
+          <details>
+            <summary class="dept-collapse__summary">
+              <span class="dept-collapse__row">
+                <h2>Assigned personnel</h2>
+                <svg class="dept-collapse__icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="dept-collapse__body">
+              @if (count($personnel ?? []) === 0)
+                <p class="sup-muted-block">No personnel assigned yet.</p>
+              @else
+                <ul class="audit-trail-list">
+                  @foreach ($personnel as $person)
+                    <li class="audit-trail-item">
+                      <div class="audit-trail-meta">
+                        <span class="audit-trail-action">{{ $person['name'] }}</span>
+                        @if (!empty($person['role']))
+                          <span class="audit-trail-user">{{ $person['role'] }}</span>
+                        @endif
+                        @if (!empty($person['assignedAt']))
+                          <span class="audit-trail-time">{{ \Illuminate\Support\Carbon::parse($person['assignedAt'])->format('Y-m-d H:i') }}</span>
+                        @endif
+                      </div>
+                      @if (!empty($person['assignedByName']))
+                        <p class="audit-trail-current__plan">Assigned by {{ $person['assignedByName'] }}</p>
+                      @endif
+                    </li>
+                  @endforeach
+                </ul>
+              @endif
+              @if (!empty($caps['canAssignPersonnel']))
+                <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/personnel" class="stack-form stack-form--console" style="margin-top:1rem">
+                  @csrf
+                  <div class="field field--console">
+                    <label for="personName">Name <span class="text-muted">(required)</span></label>
+                    <input id="personName" name="personName" type="text" required placeholder="Staff member name">
                   </div>
-                  @if (!empty($person['assignedByName']))
-                    <p class="audit-trail-current__plan">Assigned by {{ $person['assignedByName'] }}</p>
-                  @endif
-                </li>
-              @endforeach
-            </ul>
-          @endif
-          @if (!empty($caps['canAssignPersonnel']))
-            <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/personnel" class="stack-form stack-form--console" style="margin-top:1rem">
-              @csrf
-              <div class="field field--console">
-                <label for="personName">Name <span class="text-muted">(required)</span></label>
-                <input id="personName" name="personName" type="text" required placeholder="Staff member name">
-              </div>
-              <div class="field field--console">
-                <label for="personRole">Role <span class="text-muted">(optional)</span></label>
-                <input id="personRole" name="personRole" type="text" placeholder="e.g. Implementer">
-              </div>
-              <button type="submit" class="btn-primary btn-primary--auto">Assign personnel</button>
-            </form>
-          @endif
+                  <div class="field field--console">
+                    <label for="personRole">Role <span class="text-muted">(optional)</span></label>
+                    <input id="personRole" name="personRole" type="text" placeholder="e.g. Implementer">
+                  </div>
+                  <button type="submit" class="btn-primary btn-primary--auto">Assign personnel</button>
+                </form>
+              @endif
+            </div>
+          </details>
         </section>
       @endif
 
@@ -291,22 +302,33 @@
       @endif
 
       @if (count($timeline ?? []) > 0)
-        <section class="sup-card">
-          <h2>Activity</h2>
-          <ul class="audit-trail-list">
-            @foreach ($timeline as $event)
-              <li class="audit-trail-item">
-                <div class="audit-trail-meta">
-                  <span class="audit-trail-action">{{ $event['action'] }}</span>
-                  <span class="audit-trail-user">{{ $event['actorName'] }}</span>
-                  <span class="audit-trail-time">{{ !empty($event['at']) ? \Illuminate\Support\Carbon::parse($event['at'])->format('Y-m-d H:i') : '' }}</span>
-                </div>
-                @if (($event['detail'] ?? '') !== '')
-                  <p class="audit-trail-current__plan">{{ $event['detail'] }}</p>
-                @endif
-              </li>
-            @endforeach
-          </ul>
+        <section class="sup-card dept-collapse">
+          <details>
+            <summary class="dept-collapse__summary">
+              <span class="dept-collapse__row">
+                <h2>Activity</h2>
+                <svg class="dept-collapse__icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="dept-collapse__body">
+              <ul class="audit-trail-list">
+                @foreach ($timeline as $event)
+                  <li class="audit-trail-item">
+                    <div class="audit-trail-meta">
+                      <span class="audit-trail-action">{{ $event['action'] }}</span>
+                      <span class="audit-trail-user">{{ $event['actorName'] }}</span>
+                      <span class="audit-trail-time">{{ !empty($event['at']) ? \Illuminate\Support\Carbon::parse($event['at'])->format('Y-m-d H:i') : '' }}</span>
+                    </div>
+                    @if (($event['detail'] ?? '') !== '')
+                      <p class="audit-trail-current__plan">{{ $event['detail'] }}</p>
+                    @endif
+                  </li>
+                @endforeach
+              </ul>
+            </div>
+          </details>
         </section>
       @endif
 

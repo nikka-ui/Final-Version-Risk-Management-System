@@ -3192,6 +3192,17 @@ a.btn-enterprise-outline:focus {
   background: #bfdbfe;
 }
 
+#reviewSubmissionSection:has(#confirmBox:checked) #submitBtn:not(:disabled) {
+  background: #6FB46A !important;
+  color: #ffffff;
+  opacity: 1;
+  box-shadow: 0 12px 30px rgba(22, 163, 74, 0.18);
+}
+
+#reviewSubmissionSection:has(#confirmBox:checked) #submitBtn:not(:disabled):hover {
+  background: #5aa35a !important;
+}
+
 @keyframes review-submission-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.55);
@@ -5007,6 +5018,56 @@ a.officer-kpi:hover {
   border-radius: var(--sup-radius);
   box-shadow: var(--sup-shadow);
   padding: 1.15rem 1.25rem;
+}
+
+.sup-card.dept-collapse {
+  padding: 0;
+}
+
+.dept-collapse__summary {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.dept-collapse__summary::-webkit-details-marker,
+.dept-collapse__summary::marker {
+  display: none;
+  content: "";
+}
+
+.dept-collapse__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.dept-collapse__summary h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.dept-collapse__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  transition: transform 0.15s ease;
+}
+
+.dept-collapse details[open] .dept-collapse__icon {
+  transform: rotate(180deg);
+}
+
+.dept-collapse__body {
+  padding: 0.9rem 1.25rem 1.15rem;
+  border-top: 1px solid var(--sup-border);
 }
 
 .sup-card--table {
