@@ -46,6 +46,29 @@ class DemoUserSeeder extends Seeder
                 'deleted_at' => null,
             ];
 
+            // Seed emails/employee IDs are reserved; move collisions off other rows
+            // so re-seed can reset passwords without unique-constraint failures.
+            $email = $attributes['email'];
+            $employeeId = $attributes['employee_id'];
+            User::query()
+                ->where('username', '!=', $username)
+                ->where(function ($q) use ($email, $employeeId) {
+                    $q->where('email', $email);
+                    if ($employeeId !== '') {
+                        $q->orWhere('employee_id', $employeeId);
+                    }
+                })
+                ->get()
+                ->each(function (User $conflict) use ($email, $employeeId): void {
+                    if (strcasecmp((string) $conflict->email, $email) === 0) {
+                        $conflict->email = strtolower((string) $conflict->username).'+legacy@rms.local';
+                    }
+                    if ($employeeId !== '' && (string) $conflict->employee_id === $employeeId) {
+                        $conflict->employee_id = 'LEGACY-'.(string) $conflict->id;
+                    }
+                    $conflict->save();
+                });
+
             $user = User::query()->where('username', $username)->first();
             if ($user) {
                 if (! Hash::check($password, $user->password)) {

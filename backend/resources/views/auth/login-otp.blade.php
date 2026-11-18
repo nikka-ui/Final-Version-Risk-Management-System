@@ -32,7 +32,12 @@
 
       <fieldset class="login-otp__fieldset">
         <legend class="login-otp__legend">One-time code</legend>
-        <div class="login-otp__digits" role="group" aria-label="6-digit verification code">
+        <div
+          class="login-otp__digits{{ !empty($error) ? ' is-invalid' : '' }}"
+          role="group"
+          aria-label="6-digit verification code"
+          data-otp-digits
+        >
           @for ($i = 0; $i < 6; $i++)
             <input
               type="text"
@@ -49,11 +54,6 @@
           @endfor
         </div>
       </fieldset>
-
-      <div class="login-otp__status" role="status" aria-live="polite">
-        <span class="login-otp__status-text" data-otp-status>6 digits left</span>
-        <span class="login-otp__status-accent" aria-hidden="true"></span>
-      </div>
 
       <button type="submit" class="login-submit" data-otp-submit disabled>Sign In</button>
     </form>

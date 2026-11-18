@@ -246,17 +246,17 @@ body {
   font-family: inherit;
   letter-spacing: 0.02em;
   color: #fff;
-  background: var(--accent);
+  background: #476c9b;
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 10px 22px rgba(71, 108, 155, 0.22);
   transition: transform 0.05s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .login-submit:hover {
-  background: #1d4ed8;
-  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.3);
+  background: #3b5c86;
+  box-shadow: 0 12px 26px rgba(71, 108, 155, 0.28);
 }
 
 .login-submit:active {
@@ -314,8 +314,8 @@ body {
   height: 3.5rem;
   margin: 0 auto 1.25rem;
   border-radius: 50%;
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--accent);
+  background: rgba(71, 108, 155, 0.12);
+  color: #476c9b;
 }
 
 .login-otp__lock {
@@ -367,30 +367,31 @@ body {
   display: flex;
   justify-content: center;
   align-items: stretch;
-  gap: 0.45rem;
-  margin-bottom: 1rem;
+  gap: 0.55rem;
+  margin-bottom: 1.35rem;
 }
 
 .login-otp__digit {
-  flex: 0 1 2.75rem;
-  width: 2.75rem;
-  height: 3.35rem;
-  max-width: 2.75rem;
-  padding: 0;
+  flex: 0 1 2.5rem;
+  width: 2.5rem;
+  height: 3rem;
+  max-width: 2.5rem;
+  padding: 0 0 0.35rem;
   text-align: center;
   font-family: 'DM Sans', var(--font);
   font-size: 1.375rem;
   font-weight: 600;
-  color: var(--accent);
-  border: 1.5px solid rgba(37, 99, 235, 0.45);
-  border-radius: 0.65rem;
-  background: var(--bg-form);
-  caret-color: var(--accent);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  color: var(--text);
+  border: 0;
+  border-bottom: 2px solid #cbd5e1;
+  border-radius: 0;
+  background: transparent;
+  caret-color: #476c9b;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .login-otp__digit--group-start {
-  margin-left: 0.55rem;
+  margin-left: 0.65rem;
 }
 
 .login-otp__digit::placeholder {
@@ -398,59 +399,44 @@ body {
 }
 
 .login-otp__digit:hover {
-  border-color: var(--accent);
+  border-bottom-color: #94a3b8;
 }
 
-.login-otp__digit:focus {
+.login-otp__digit:focus,
+.login-otp__digit.is-active {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  border-bottom-color: #476c9b;
+  box-shadow: none;
 }
 
 .login-otp__digit.is-filled {
-  border-color: var(--accent);
+  border-bottom-color: #64748b;
 }
 
-.login-otp__digit.is-active {
-  border-color: var(--accent);
-  box-shadow: inset 0 3px 0 0 var(--accent), 0 0 0 3px rgba(37, 99, 235, 0.1);
+.login-otp__digits.is-invalid .login-otp__digit {
+  border-bottom-color: #fda29b;
+  color: var(--error-text);
+  caret-color: var(--error-text);
 }
 
-.login-otp__status {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.5rem;
-  margin-bottom: 1rem;
-  padding: 0.65rem 1.75rem 0.65rem 1rem;
-  border-radius: 999px;
-  background: #eef1f5;
-  overflow: hidden;
+.login-otp__digits.is-invalid .login-otp__digit:hover,
+.login-otp__digits.is-invalid .login-otp__digit:focus,
+.login-otp__digits.is-invalid .login-otp__digit.is-active {
+  border-bottom-color: var(--error-text);
+  box-shadow: none;
 }
 
-.login-otp__status-text {
-  font-family: 'DM Sans', var(--font);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-muted);
+.login-otp__digits.is-ready .login-otp__digit {
+  border-bottom-color: #69b5a6;
+  color: var(--success-text);
+  caret-color: #69b5a6;
 }
 
-.login-otp__status-accent {
-  position: absolute;
-  right: 0.45rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.28rem;
-  height: 1.35rem;
-  border-radius: 999px;
-  background: var(--accent);
-  opacity: 0.85;
-}
-
-.login-otp__status.is-ready .login-otp__status-text {
-  color: var(--accent);
-  font-weight: 600;
+.login-otp__digits.is-ready .login-otp__digit:hover,
+.login-otp__digits.is-ready .login-otp__digit:focus,
+.login-otp__digits.is-ready .login-otp__digit.is-active {
+  border-bottom-color: #69b5a6;
+  box-shadow: none;
 }
 
 .login-otp .login-submit:disabled {
@@ -460,7 +446,7 @@ body {
 }
 
 .login-otp .login-submit:disabled:hover {
-  background: var(--accent);
+  background: #476c9b;
   box-shadow: none;
 }
 
@@ -471,19 +457,19 @@ body {
 
 @media (max-width: 400px) {
   .login-otp__digit {
-    flex-basis: 2.35rem;
-    width: 2.35rem;
-    max-width: 2.35rem;
-    height: 2.9rem;
+    flex-basis: 2.1rem;
+    width: 2.1rem;
+    max-width: 2.1rem;
+    height: 2.7rem;
     font-size: 1.2rem;
   }
 
   .login-otp__digit--group-start {
-    margin-left: 0.35rem;
+    margin-left: 0.4rem;
   }
 
   .login-otp__digits {
-    gap: 0.3rem;
+    gap: 0.4rem;
   }
 }
 

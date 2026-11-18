@@ -202,9 +202,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    # Entrypoint chowns /data then setpriv → valkey. Needs these caps after cap_drop ALL.
     cap_drop:
       - ALL
     cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
       - SETGID
       - SETUID
     security_opt:
