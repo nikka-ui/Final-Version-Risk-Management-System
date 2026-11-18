@@ -37,6 +37,7 @@ class DeptTicketDetailService
      *   ticket: array<string, mixed>,
      *   fiveW1H: array<string, string>,
      *   attachments: list<array<string, mixed>>,
+     *   planDocuments: list<array<string, mixed>>,
      *   actionPlan: array<string, mixed>|null,
      *   accomplishment: array<string, mixed>|null,
      *   timeline: list<array<string, mixed>>,
@@ -88,7 +89,17 @@ class DeptTicketDetailService
         $planPublished = $plan && (! empty($plan['publishedToReporterAt']) || ! empty($plan['submittedForReviewAt']));
         $isDraftPlan = $plan && ! empty(trim((string) ($plan['summary'] ?? ''))) && ! $planPublished;
 
-        $attachments = RiskAttachment::query()
+        $payload = is_array($ticket->payload) ? $ticket->payload : [];
+        $planDocIds = array_values(array_filter(
+            array_merge(
+                is_array($payload['actionPlanDocumentIds'] ?? null) ? $payload['actionPlanDocumentIds'] : [],
+                is_array($payload['implementationEvidenceIds'] ?? null) ? $payload['implementationEvidenceIds'] : [],
+            ),
+            fn ($id) => is_string($id) && $id !== '',
+        ));
+        $planDocIdSet = array_fill_keys($planDocIds, true);
+
+        $allAttachments = RiskAttachment::query()
             ->where('ticket_ref', $ticket->reference)
             ->orderByDesc('uploaded_at')
             ->get()
@@ -97,7 +108,16 @@ class DeptTicketDetailService
                 'name' => $a->original_name ?: 'file',
                 'size' => (int) $a->size_bytes,
                 'uploadedAt' => optional($a->uploaded_at)?->toIso8601String(),
-            ])
+                'uploadedBy' => $a->uploaded_by,
+            ]);
+
+        $planDocuments = $allAttachments
+            ->filter(fn (array $file) => isset($planDocIdSet[$file['id']]))
+            ->values()
+            ->all();
+
+        $attachments = $allAttachments
+            ->reject(fn (array $file) => isset($planDocIdSet[$file['id']]))
             ->values()
             ->all();
 
@@ -223,6 +243,7 @@ class DeptTicketDetailService
                 'how' => (string) ($five['how'] ?? ''),
             ],
             'attachments' => $attachments,
+            'planDocuments' => $planDocuments,
             'actionPlan' => $plan && trim((string) ($plan['summary'] ?? '')) !== '' ? [
                 'summary' => (string) ($plan['summary'] ?? ''),
                 'steps' => array_values(array_filter(array_map(
@@ -256,7 +277,7 @@ class DeptTicketDetailService
                 'canEditActionPlan' => $canExecute,
                 'canClose' => $canClose,
                 'canPostComment' => true,
-                'canUploadDocuments' => $canExecute,
+                'canUploadDocuments' => $isOwner && in_array($status, ['in_progress', 'reopened', 'in_mitigation'], true),
                 'canAssignPersonnel' => $canExecute,
             ],
             'stats' => $dashboard['stats'],

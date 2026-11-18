@@ -41,6 +41,7 @@ class DeptTicketDetailController extends Controller
             'ticket' => $payload['ticket'],
             'fiveW1H' => $payload['fiveW1H'],
             'attachments' => $payload['attachments'],
+            'planDocuments' => $payload['planDocuments'],
             'actionPlan' => $payload['actionPlan'],
             'accomplishment' => $payload['accomplishment'],
             'timeline' => $payload['timeline'],
@@ -96,10 +97,16 @@ class DeptTicketDetailController extends Controller
 
     public function saveActionPlan(Request $request, string $reference): RedirectResponse
     {
+        $files = $request->file('attachments', []);
+        if ($files instanceof UploadedFile) {
+            $files = [$files];
+        }
+        $files = array_values(array_filter(is_array($files) ? $files : []));
+
         return $this->mutate(
             $request,
             $reference,
-            fn ($ticket, $user, $input) => $this->deptTickets->saveActionPlan($ticket, $user, $input),
+            fn ($ticket, $user, $input) => $this->deptTickets->saveActionPlan($ticket, $user, $input, $files),
             null,
             function ($ticket) use ($request, $reference) {
                 $submit = in_array($request->input('submitForReview'), [true, 1, '1', 'true'], true);

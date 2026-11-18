@@ -1281,14 +1281,52 @@ form.inline {
 }
 
 .w1h-grid--readonly {
-  gap: 0.625rem;
+  gap: 0.85rem;
 }
 
 .w1h-grid--readonly .w1h-item {
-  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  min-height: 8.5rem;
+  padding: 1.05rem 1.1rem 1.15rem;
   background: #fff;
-  border: 1px solid var(--sup-border, #e5e7eb);
-  border-radius: 8px;
+  border: 1px solid rgba(32, 28, 33, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  text-align: left;
+}
+
+.w1h-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-align: left;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.w1h-badge__dot {
+  flex: 0 0 auto;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.w1h-badge.is-empty {
+  background: #f0f9ff;
+  color: #7dd3fc;
 }
 
 .w1h-label {
@@ -1299,22 +1337,20 @@ form.inline {
   margin-bottom: 0.35rem;
 }
 
-.w1h-grid--readonly .w1h-label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: #201c21;
-  background: #e8f4f6;
-  padding: 0.4rem 0.65rem;
-  border-radius: 6px;
-  margin-bottom: 0.55rem;
-  border-left: 3px solid #69b5a6;
+.w1h-item p,
+.w1h-grid--readonly .w1h-item p {
+  width: 100%;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: 0;
+  color: #64748b;
+  text-align: left;
 }
 
-.w1h-item p {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  margin: 0;
+@media (max-width: 700px) {
+  .w1h-grid--readonly {
+    grid-template-columns: 1fr;
+  }
 }
 
 .ticket-form .card {
@@ -7965,7 +8001,23 @@ body.dept-modal-open {
   margin: 0 0 0.85rem;
 }
 
+.dept-plan-docs__list {
+  margin: 0 0 0.85rem;
+}
+
 .dept-plan-docs .upload-zone {
+  margin-bottom: 0.75rem;
+}
+
+.dept-plan-docs .upload-pending-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.dept-plan-docs .upload-message:empty {
+  display: none;
+}
+
+.dept-plan-docs .upload-message:not(:empty) {
   margin-bottom: 0.75rem;
 }
 

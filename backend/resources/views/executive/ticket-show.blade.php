@@ -62,21 +62,7 @@
 
     <section class="sup-card">
       <h2>5W1H report</h2>
-      <div class="w1h-grid w1h-grid--readonly">
-        @foreach ([
-          'what' => 'What happened?',
-          'why' => 'Why did it happen?',
-          'where' => 'Where did it occur?',
-          'when' => 'When did it occur?',
-          'who' => 'Who was involved?',
-          'how' => 'How was it discovered?',
-        ] as $key => $label)
-          <div class="w1h-item">
-            <span class="w1h-label">{{ $label }}</span>
-            <p>{{ ($w[$key] ?? '') !== '' ? $w[$key] : '—' }}</p>
-          </div>
-        @endforeach
-      </div>
+      <x-w1h-readonly :w="$w ?? []" />
     </section>
 
     <section class="sup-card">

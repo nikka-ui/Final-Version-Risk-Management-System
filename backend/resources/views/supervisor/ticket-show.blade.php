@@ -77,21 +77,7 @@
 
   <section class="sup-card">
     <h2>5W1H</h2>
-    <div class="w1h-grid w1h-grid--readonly">
-      @foreach ([
-        'what' => 'What happened?',
-        'why' => 'Why did it happen?',
-        'where' => 'Where did it occur?',
-        'when' => 'When did it occur?',
-        'who' => 'Who was involved?',
-        'how' => 'How was it discovered?',
-      ] as $key => $label)
-        <div class="w1h-item">
-          <span class="w1h-label">{{ $label }}</span>
-          <p>{{ ($w[$key] ?? '') !== '' ? $w[$key] : '—' }}</p>
-        </div>
-      @endforeach
-    </div>
+    <x-w1h-readonly :w="$w ?? []" />
   </section>
 
   <section class="sup-card">
@@ -164,32 +150,43 @@
     </section>
   @endif
 
-  <section class="sup-card">
-    <h2>Ticket timeline</h2>
-    @if (count($timeline) === 0)
-      <p class="text-muted">Lifecycle events will appear here after workflow updates sync to Laravel.</p>
-    @else
-      <ul class="ticket-timeline">
-        @foreach ($timeline as $event)
-          <li class="ticket-timeline-item">
-            <div class="ticket-timeline-item__body">
-              <div class="ticket-timeline-item__meta">
-                <strong>{{ $event['action'] }}</strong>
-                @if (!empty($event['at']))
-                  <span class="ticket-timeline-item__time">{{ $event['at'] }}</span>
-                @endif
-              </div>
-              @if (!empty($event['detail']))
-                <p class="ticket-timeline-item__detail">{{ $event['detail'] }}</p>
-              @endif
-              @if (!empty($event['actorName']))
-                <span class="ticket-timeline-item__actor">{{ $event['actorName'] }}</span>
-              @endif
-            </div>
-          </li>
-        @endforeach
-      </ul>
-    @endif
+  <section class="sup-card dept-collapse">
+    <details>
+      <summary class="dept-collapse__summary">
+        <span class="dept-collapse__row">
+          <h2>Ticket timeline</h2>
+          <svg class="dept-collapse__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </summary>
+      <div class="dept-collapse__body">
+        @if (count($timeline) === 0)
+          <p class="text-muted">Lifecycle events will appear here after workflow updates sync to Laravel.</p>
+        @else
+          <ul class="ticket-timeline">
+            @foreach ($timeline as $event)
+              <li class="ticket-timeline-item">
+                <div class="ticket-timeline-item__body">
+                  <div class="ticket-timeline-item__meta">
+                    <strong>{{ $event['action'] }}</strong>
+                    @if (!empty($event['at']))
+                      <span class="ticket-timeline-item__time">{{ $event['at'] }}</span>
+                    @endif
+                  </div>
+                  @if (!empty($event['detail']))
+                    <p class="ticket-timeline-item__detail">{{ $event['detail'] }}</p>
+                  @endif
+                  @if (!empty($event['actorName']))
+                    <span class="ticket-timeline-item__actor">{{ $event['actorName'] }}</span>
+                  @endif
+                </div>
+              </li>
+            @endforeach
+          </ul>
+        @endif
+      </div>
+    </details>
   </section>
 
   @include('partials.thread-discussion', [

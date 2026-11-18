@@ -85,21 +85,7 @@
 
       <section class="sup-card">
         <h2>5W1H report</h2>
-        <div class="w1h-grid w1h-grid--readonly">
-          @foreach ([
-            'what' => 'What happened?',
-            'why' => 'Why did it happen?',
-            'where' => 'Where did it occur?',
-            'when' => 'When did it occur?',
-            'who' => 'Who was involved?',
-            'how' => 'How was it discovered?',
-          ] as $key => $label)
-            <div class="w1h-item">
-              <span class="w1h-label">{{ $label }}</span>
-              <p>{{ ($w[$key] ?? '') !== '' ? $w[$key] : '—' }}</p>
-            </div>
-          @endforeach
-        </div>
+        <x-w1h-readonly :w="$w ?? []" />
       </section>
 
       <section class="sup-card">
@@ -197,39 +183,73 @@
           <div class="sup-card__body"><p class="sup-muted-block">No action plan yet.</p></div>
         @endif
 
-        @if (!empty($caps['canUploadDocuments']))
-          <div class="sup-card__body">
-            <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/documents" class="stack-form stack-form--console" enctype="multipart/form-data">
-              @csrf
-              <div class="field field--console">
-                <label for="deptDocs">Supporting documents</label>
-                <p class="section-hint text-muted">Upload PDF, PNG, or JPG (max 20MB each) once the ticket is in progress.</p>
-                <input id="deptDocs" name="attachments" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" required>
-              </div>
-              <button type="submit" class="btn-primary btn-primary--auto">Upload documents</button>
-            </form>
-          </div>
-        @endif
+        @if ($plan || !empty($caps['canEditActionPlan']) || !empty($caps['canUploadDocuments']) || count($planDocuments ?? []) > 0)
+          <div class="sup-card__body dept-plan-docs">
+            <h4 class="dept-plan-docs__title">Supporting documents</h4>
+            @if (count($planDocuments ?? []) > 0)
+              <ul class="evidence-list dept-plan-docs__list">
+                @foreach ($planDocuments as $file)
+                  <li>
+                    <a href="/dept/attachments/{{ urlencode($file['id']) }}" target="_blank" rel="noopener">{{ $file['name'] }}</a>
+                    @if (!empty($file['size']))
+                      <span class="text-muted">· {{ number_format($file['size'] / 1024 / 1024, 2) }} MB</span>
+                    @endif
+                    @if (!empty($file['uploadedAt']))
+                      <span class="text-muted">· {{ \Illuminate\Support\Carbon::parse($file['uploadedAt'])->format('Y-m-d H:i') }}</span>
+                    @endif
+                  </li>
+                @endforeach
+              </ul>
+            @else
+              <p class="field-hint text-muted">No supporting documents uploaded yet.</p>
+            @endif
 
-        @if (!empty($caps['canEditActionPlan']))
-          <div class="sup-card__body">
-            <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/action-plan" class="stack-form stack-form--console dept-inline-form">
-              @csrf
-              <div class="field field--console">
-                <label for="planSummary">{{ $plan ? 'Update action plan' : 'Action plan summary' }}</label>
-                <textarea id="planSummary" name="summary" rows="3" required placeholder="Describe the corrective actions the department will take…">{{ $plan['summary'] ?? '' }}</textarea>
-              </div>
-              <div class="field field--console">
-                <label for="planSteps">Action steps <span class="text-muted">(one per line, optional)</span></label>
-                <textarea id="planSteps" name="steps" rows="3" placeholder="Step 1&#10;Step 2">{{ implode("\n", $plan['steps'] ?? []) }}</textarea>
-              </div>
-              <div class="field field--console">
-                <label for="planTarget">Target completion date <span class="text-muted">(required to submit)</span></label>
-                <input id="planTarget" name="targetDate" type="date" value="{{ $plan['targetDate'] ?? '' }}">
-              </div>
-              <button type="submit" class="btn-accept--outline">{{ $plan ? 'Save draft' : 'Save action plan draft' }}</button>
-              <button type="submit" name="submitForReview" value="1" class="btn-primary btn-primary--auto">{{ $submitLabel }}</button>
-            </form>
+            @if (!empty($caps['canEditActionPlan']))
+              <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/action-plan" class="stack-form stack-form--console dept-inline-form" enctype="multipart/form-data" id="deptDocsForm">
+                @csrf
+                <div class="field field--console">
+                  <label for="planSummary">{{ $plan ? 'Update action plan' : 'Action plan summary' }}</label>
+                  <textarea id="planSummary" name="summary" rows="3" required placeholder="Describe the corrective actions the department will take…">{{ $plan['summary'] ?? '' }}</textarea>
+                </div>
+                <div class="field field--console">
+                  <label for="planSteps">Action steps <span class="text-muted">(one per line, optional)</span></label>
+                  <textarea id="planSteps" name="steps" rows="3" placeholder="Step 1&#10;Step 2">{{ implode("\n", $plan['steps'] ?? []) }}</textarea>
+                </div>
+                <div class="field field--console">
+                  <label for="planTarget">Target completion date <span class="text-muted">(required to submit)</span></label>
+                  <input id="planTarget" name="targetDate" type="date" value="{{ $plan['targetDate'] ?? '' }}">
+                </div>
+                <p class="field-hint text-muted">Attach supporting files here — they are saved with the action plan when you save or send it.</p>
+                <div class="upload-zone upload-zone--compact" id="deptDropzone" role="button" tabindex="0" aria-label="Upload supporting documents">
+                  <p class="upload-title">Drag and drop files here</p>
+                  <p class="upload-sub">Accepted types: PDF, PNG, JPG (max 20MB)</p>
+                  <button type="button" class="btn-outline btn-upload" id="deptBrowseBtn">Browse files</button>
+                  <input id="deptDocs" name="attachments" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" style="display:none">
+                </div>
+                <div class="upload-pending-wrap" id="deptPendingUploads" hidden>
+                  <ul class="upload-preview upload-preview--pending" id="deptFilePreview"></ul>
+                </div>
+                <div class="upload-message" id="deptUploadMessage" role="status"></div>
+                <button type="submit" class="btn-accept--outline">{{ $plan ? 'Save draft' : 'Save action plan draft' }}</button>
+                <button type="submit" name="submitForReview" value="1" class="btn-primary btn-primary--auto">{{ $submitLabel }}</button>
+              </form>
+            @elseif (!empty($caps['canUploadDocuments']))
+              <form method="post" action="/dept/tickets/{{ urlencode($ref) }}/documents" class="stack-form stack-form--console" enctype="multipart/form-data" id="deptDocsForm">
+                @csrf
+                <p class="field-hint text-muted">Upload PDF, PNG, or JPG (max 20MB each). Files stay attached to this action plan.</p>
+                <div class="upload-zone upload-zone--compact" id="deptDropzone" role="button" tabindex="0" aria-label="Upload supporting documents">
+                  <p class="upload-title">Drag and drop files here</p>
+                  <p class="upload-sub">Accepted types: PDF, PNG, JPG (max 20MB)</p>
+                  <button type="button" class="btn-outline btn-upload" id="deptBrowseBtn">Browse files</button>
+                  <input id="deptDocs" name="attachments" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" style="display:none">
+                </div>
+                <div class="upload-pending-wrap" id="deptPendingUploads" hidden>
+                  <ul class="upload-preview upload-preview--pending" id="deptFilePreview"></ul>
+                </div>
+                <div class="upload-message" id="deptUploadMessage" role="status"></div>
+                <button type="submit" class="btn-primary btn-primary--auto" id="deptUploadSubmit" disabled>Upload documents</button>
+              </form>
+            @endif
           </div>
         @endif
       </section>
@@ -475,4 +495,134 @@
       @endif
     </aside>
   </div>
+
+  @if (!empty($caps['canEditActionPlan']) || !empty($caps['canUploadDocuments']))
+    <script>
+    (function () {
+      const form = document.getElementById('deptDocsForm');
+      const dropzone = document.getElementById('deptDropzone');
+      const browseBtn = document.getElementById('deptBrowseBtn');
+      const fileInput = document.getElementById('deptDocs');
+      const filePreview = document.getElementById('deptFilePreview');
+      const pendingUploads = document.getElementById('deptPendingUploads');
+      const uploadMessage = document.getElementById('deptUploadMessage');
+      const submitBtn = document.getElementById('deptUploadSubmit');
+      const docsOnly = Boolean(submitBtn);
+      if (!form || !fileInput || !dropzone) return;
+
+      let selectedFiles = [];
+      const allowedExt = new Set(['pdf', 'png', 'jpg', 'jpeg']);
+
+      function setMessage(text, ok) {
+        if (!uploadMessage) return;
+        uploadMessage.textContent = text || '';
+        uploadMessage.classList.toggle('upload-message--error', Boolean(text) && !ok);
+        uploadMessage.classList.toggle('upload-message--ok', Boolean(text) && ok);
+      }
+
+      function syncInputFiles() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach((f) => dt.items.add(f));
+        fileInput.files = dt.files;
+        if (submitBtn) submitBtn.disabled = selectedFiles.length === 0;
+      }
+
+      function renderPreview() {
+        if (!filePreview || !pendingUploads) return;
+        filePreview.innerHTML = '';
+        if (!selectedFiles.length) {
+          pendingUploads.hidden = true;
+          return;
+        }
+        pendingUploads.hidden = false;
+        selectedFiles.forEach((f, idx) => {
+          const li = document.createElement('li');
+          li.className = 'upload-preview-item upload-preview-item--pending';
+          li.innerHTML = '<span class="upload-name"></span><span class="upload-meta"></span><button type="button" class="upload-remove-btn">Remove</button>';
+          li.querySelector('.upload-name').textContent = f.name;
+          li.querySelector('.upload-meta').textContent = (f.size / 1024 / 1024).toFixed(2) + ' MB · Ready to upload';
+          li.querySelector('.upload-remove-btn').addEventListener('click', () => {
+            selectedFiles.splice(idx, 1);
+            syncInputFiles();
+            renderPreview();
+            setMessage('');
+          });
+          filePreview.appendChild(li);
+        });
+      }
+
+      function validateFile(file) {
+        const parts = String(file.name || '').toLowerCase().split('.');
+        const ext = parts.length > 1 ? parts[parts.length - 1] : '';
+        if (!allowedExt.has(ext)) return { ok: false, reason: 'Unsupported file type: ' + ext.toUpperCase() };
+        if (file.size > 20 * 1024 * 1024) return { ok: false, reason: 'File exceeds 20MB: ' + file.name };
+        return { ok: true };
+      }
+
+      function addFiles(files) {
+        const errors = [];
+        for (const f of Array.from(files || [])) {
+          const v = validateFile(f);
+          if (!v.ok) {
+            errors.push(v.reason);
+            continue;
+          }
+          selectedFiles.push(f);
+        }
+        selectedFiles = selectedFiles.slice(0, 10);
+        syncInputFiles();
+        renderPreview();
+        setMessage(errors[0] || '', false);
+      }
+
+      function openPicker() {
+        fileInput.click();
+      }
+
+      browseBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openPicker();
+      });
+      dropzone.addEventListener('click', (e) => {
+        if (e.target === dropzone || e.target.classList.contains('upload-title') || e.target.classList.contains('upload-sub')) {
+          openPicker();
+        }
+      });
+      dropzone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openPicker();
+        }
+      });
+      fileInput.addEventListener('change', (e) => {
+        addFiles(e.target.files);
+        e.target.value = '';
+        syncInputFiles();
+      });
+      ['dragenter', 'dragover'].forEach((evt) => {
+        dropzone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach((evt) => {
+        dropzone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
+      dropzone.addEventListener('drop', (e) => {
+        if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
+      });
+      form.addEventListener('submit', (e) => {
+        syncInputFiles();
+        if (docsOnly && !selectedFiles.length) {
+          e.preventDefault();
+          setMessage('Select at least one PDF, PNG, or JPG file.', false);
+        }
+      });
+    })();
+    </script>
+  @endif
 @endsection

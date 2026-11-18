@@ -30,6 +30,9 @@ class DeptTicketService
     private const EXECUTION_STATUSES = ['in_progress', 'reopened'];
 
     /** @var list<string> */
+    private const DOCUMENT_UPLOAD_STATUSES = ['in_progress', 'reopened', 'in_mitigation'];
+
+    /** @var list<string> */
     private const REASSIGN_STATUSES = ['assigned', 'in_progress', 'reopened'];
 
     /** @var list<string> */
@@ -138,7 +141,10 @@ class DeptTicketService
         return $fresh;
     }
 
-    public function saveActionPlan(RiskTicket $ticket, User $user, array $input = []): RiskTicket
+    /**
+     * @param  list<UploadedFile>  $files
+     */
+    public function saveActionPlan(RiskTicket $ticket, User $user, array $input = [], array $files = []): RiskTicket
     {
         $this->assertDeptHeadAccess($ticket, $user);
         if (! $this->canExecute($ticket, $user)) {
@@ -256,7 +262,12 @@ class DeptTicketService
             'payload' => $payload === [] ? $ticket->payload : $payload,
         ]);
         $ticket->save();
-        $fresh = $ticket->fresh();
+        $fresh = $ticket->fresh() ?? $ticket;
+
+        if ($files !== []) {
+            $fresh = $this->attachSupportingDocuments($fresh, $user, $files, false);
+        }
+
         $this->workflowNotifications->actionPlanSaved($fresh, $user);
 
         return $fresh;
@@ -506,7 +517,7 @@ class DeptTicketService
     public function uploadDocuments(RiskTicket $ticket, User $user, array $files): RiskTicket
     {
         $this->assertDeptHeadAccess($ticket, $user);
-        if (! in_array($ticket->status, self::EXECUTION_STATUSES, true)) {
+        if (! $this->canUploadDocuments($ticket, $user)) {
             throw ValidationException::withMessages([
                 'status' => ['Documents can be uploaded once the ticket is in progress.'],
             ]);
@@ -517,21 +528,51 @@ class DeptTicketService
             ]);
         }
 
+        return $this->attachSupportingDocuments($ticket, $user, $files, true);
+    }
+
+    /**
+     * @param  list<UploadedFile>  $files
+     */
+    private function attachSupportingDocuments(RiskTicket $ticket, User $user, array $files, bool $requireFiles): RiskTicket
+    {
+        if ($files === []) {
+            if ($requireFiles) {
+                throw ValidationException::withMessages([
+                    'attachments' => ['Select at least one document to upload.'],
+                ]);
+            }
+
+            return $ticket;
+        }
+
         $saved = $this->attachments->storeUploadedFiles($ticket->reference, $files, $user->username);
+        if ($saved === []) {
+            return $ticket;
+        }
+
         $now = now();
         $payload = is_array($ticket->payload) ? $ticket->payload : [];
-        $ids = is_array($payload['implementationEvidenceIds'] ?? null) ? $payload['implementationEvidenceIds'] : [];
+        $planIds = is_array($payload['actionPlanDocumentIds'] ?? null) ? $payload['actionPlanDocumentIds'] : [];
+        $implIds = is_array($payload['implementationEvidenceIds'] ?? null) ? $payload['implementationEvidenceIds'] : [];
         $fileNames = [];
         foreach ($saved as $att) {
             if (! $att instanceof RiskAttachment) {
                 continue;
             }
             $fileNames[] = (string) $att->original_name;
-            if ($att->id !== '' && ! in_array($att->id, $ids, true)) {
-                $ids[] = $att->id;
+            if ($att->id === '') {
+                continue;
+            }
+            if (! in_array($att->id, $planIds, true)) {
+                $planIds[] = $att->id;
+            }
+            if (! in_array($att->id, $implIds, true)) {
+                $implIds[] = $att->id;
             }
         }
-        $payload['implementationEvidenceIds'] = $ids;
+        $payload['actionPlanDocumentIds'] = $planIds;
+        $payload['implementationEvidenceIds'] = $implIds;
         $docs = is_array($payload['deptDocuments'] ?? null) ? $payload['deptDocuments'] : [];
         $docs[] = [
             'at' => $now->toIso8601String(),
@@ -559,7 +600,7 @@ class DeptTicketService
         ]);
         $ticket->save();
 
-        return $ticket->fresh();
+        return $ticket->fresh() ?? $ticket;
     }
 
     /**
@@ -677,6 +718,14 @@ class DeptTicketService
         $ownership = is_array($ticket->ownership) ? $ticket->ownership : [];
 
         return in_array($ticket->status, self::EXECUTION_STATUSES, true)
+            && ($ownership['ownerUsername'] ?? null) === $user->username;
+    }
+
+    private function canUploadDocuments(RiskTicket $ticket, User $user): bool
+    {
+        $ownership = is_array($ticket->ownership) ? $ticket->ownership : [];
+
+        return in_array($ticket->status, self::DOCUMENT_UPLOAD_STATUSES, true)
             && ($ownership['ownerUsername'] ?? null) === $user->username;
     }
 
